@@ -46,12 +46,20 @@ task build:release:rust # rebuild only primes_rust, optimized
 task build:debug:rust   # rebuild only primes_rust, unoptimized w/ symbols
 task build:release:c    # rebuild only primes_c, optimized
 task build:debug:c      # rebuild only primes_c, unoptimized w/ symbols
+task sync               # create/refresh all three envs (.venv, .venv-gil, .venv-ft)
+task sync:dev           # refresh dev env (.venv)
+task sync:gil           # build/refresh standard-GIL env (.venv-gil, 3.14)
+task sync:ft            # build/refresh free-threaded env (.venv-ft, 3.14t)
 task test               # Python cross-backend tests
 task test:rust          # cargo test
 task test:all           # both
 task bench -- --high 1_000_000 --mode count --repeat 5
-task fmt                # cargo fmt
-task lint               # cargo clippy
+task bench:gil -- ...   # bench on 3.14 (standard GIL)
+task bench:ft -- ...    # bench on 3.14t (free-threaded)
+task bench:both -- ...  # bench on both interpreters back-to-back
+task wheels             # build distributable wheels for all backends into dist/
+task fmt                # format Rust + Python (cargo fmt + ruff format)
+task lint               # lint Rust + Python (cargo clippy + ruff check)
 task ft                 # rebuild env on the free-threaded interpreter (3.14t)
 task clean              # remove build artifacts
 ```
