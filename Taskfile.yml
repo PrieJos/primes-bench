@@ -1,0 +1,143 @@
+version: '3'
+
+# uv scans PATH, and the pyenv free-threaded build is only reachable through a
+# shim that resolves when it's "selected" — which it isn't here. So point uv
+# straight at the binary instead of `--python 3.14t` / `uv python install`.
+# Picks the latest free-threaded (name ends in `t`) build in `pyenv versions`.
+vars:
+  FT_PYTHON:
+    sh: v=$(pyenv versions --bare | grep 't$' | sort -V | tail -1); echo "$(pyenv root)/versions/$v/bin/python${v%.*}t"
+
+tasks:
+  default:
+    cmds: [task --list]
+    silent: true
+
+  # uv/maturin build editable extensions in release by default; debug forces
+  # unoptimized + symbols (rustc flags land after `cargo rustc --`; PRIMES_DEBUG
+  # swaps the C opt flags in setup.py).
+  build:debug:
+    desc: Build primes_rust + primes_c unoptimized w/ symbols, + pytest env
+    env:
+      PRIMES_DEBUG: '1'
+      MATURIN_PEP517_ARGS: -- -C opt-level=0 -C debuginfo=2 -C strip=none -C lto=off
+    cmds: [uv sync --reinstall-package primes-rust --reinstall-package primes-c]
+
+  build:release:
+    desc: Build primes_rust + primes_c optimized, + pytest env
+    aliases: [build]
+    cmds: [uv sync --reinstall-package primes-rust --reinstall-package primes-c]
+
+  # Single-package rebuilds (fast inner loop); same debug/release knobs as above.
+  build:debug:rust:
+    desc: Rebuild only primes_rust, unoptimized w/ symbols
+    env:
+      MATURIN_PEP517_ARGS: -- -C opt-level=0 -C debuginfo=2 -C strip=none -C lto=off
+    cmds: [uv sync --reinstall-package primes-rust]
+
+  build:release:rust:
+    desc: Rebuild only primes_rust, optimized
+    cmds: [uv sync --reinstall-package primes-rust]
+
+  build:debug:c:
+    desc: Rebuild only primes_c, unoptimized w/ symbols
+    env:
+      PRIMES_DEBUG: '1'
+    cmds: [uv sync --reinstall-package primes-c]
+
+  build:release:c:
+    desc: Rebuild only primes_c, optimized
+    cmds: [uv sync --reinstall-package primes-c]
+
+  # Persistent per-interpreter envs: bench 3.14 and 3.14t without recreating
+  # either. Extensions are ABI-specific (cp314 vs cp314t .so), so each env has
+  # its own compiled backends — built once here, then switching is just the var.
+  sync:
+    desc: Create/refresh all three envs (.venv, .venv-gil, .venv-ft)
+    cmds:
+      - task: sync:dev
+      - task: sync:gil
+      - task: sync:ft
+
+  sync:dev:
+    desc: Create/refresh the development env in .venv
+    cmds: [uv sync]
+
+  sync:gil:
+    desc: Build/refresh the standard-GIL env in .venv-gil (3.14)
+    env: {UV_PROJECT_ENVIRONMENT: .venv-gil}
+    cmds: [uv sync --python 3.14]
+
+  sync:ft:
+    desc: Build/refresh the free-threaded env in .venv-ft (3.14t)
+    env: {UV_PROJECT_ENVIRONMENT: .venv-ft}
+    cmds:
+      - uv sync --python {{.FT_PYTHON}}
+
+  bench:gil:
+    desc: 'Bench on 3.14 (standard GIL); args after --'
+    env: {UV_PROJECT_ENVIRONMENT: .venv-gil}
+    cmds: ['uv run python bench/cli.py {{.CLI_ARGS}}']
+
+  bench:ft:
+    desc: 'Bench on 3.14t (free-threaded); args after --'
+    env: {UV_PROJECT_ENVIRONMENT: .venv-ft}
+    cmds: ['uv run python bench/cli.py {{.CLI_ARGS}}']
+
+  bench:both:
+    desc: 'Bench on both interpreters back-to-back; args after --'
+    cmds:
+      - task: bench:gil
+        vars: {CLI_ARGS: '{{.CLI_ARGS}}'}
+      - task: bench:ft
+        vars: {CLI_ARGS: '{{.CLI_ARGS}}'}
+
+  wheels:
+    desc: Build distributable wheels for all three backends into dist/
+    cmds:
+      - uv build python --wheel --out-dir dist
+      - uv build c --wheel --out-dir dist
+      - uv build rust --wheel --out-dir dist
+
+  test:
+    desc: Cross-backend correctness tests
+    cmds: [uv run pytest tests/]
+
+  test:rust:
+    desc: Rust unit tests / sieve self-check
+    dir: rust
+    cmds: [cargo test]
+
+  test:all:
+    desc: All tests (Python + Rust)
+    deps: [test, test:rust]
+
+  bench:
+    desc: 'Run the benchmark CLI (args after --, e.g. task bench -- --high 1_000_000)'
+    cmds: ['uv run python bench/cli.py {{.CLI_ARGS}}']
+
+  fmt:
+    desc: Format Rust + Python source
+    cmds:
+      - cargo fmt --manifest-path rust/Cargo.toml
+      - uv run ruff format .
+
+  lint:
+    desc: Lint Rust + Python source
+    cmds:
+      - cargo clippy --all-targets --manifest-path rust/Cargo.toml
+      - uv run ruff check .
+
+  ft:
+    desc: Rebuild the env on the free-threaded interpreter (3.14t)
+    cmds:
+      - uv sync --python {{.FT_PYTHON}}
+
+  clean:
+    desc: Remove build artifacts (.gitignore set)
+    cmds:
+      - rm -rf rust/target .venv .venv-gil .venv-ft build c/build dist .pytest_cache .mypy_cache .ruff_cache
+      - rm -f c/primes_c.c
+      - find . -name '*.so' -delete
+      - find . -name '*.egg-info' -type d -exec rm -rf {} +
+      - find . -name '__pycache__' -type d -exec rm -rf {} +

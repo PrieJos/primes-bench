@@ -1,0 +1,20 @@
+[package]
+name = "primes"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+name = "primes_rust"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+pyo3 = "0.30"
+
+[features]
+# Enabled by maturin for the wheel build (see [tool.maturin] in pyproject.toml).
+# Left off for `cargo test`, so the test binary links libpython normally.
+extension-module = ["pyo3/extension-module"]
+
+[profile.release]
+lto = true
+codegen-units = 1

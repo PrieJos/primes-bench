@@ -1,0 +1,14 @@
+[build-system]
+requires = ["maturin>=1.7,<2"]
+build-backend = "maturin"
+
+[project]
+name = "primes-rust"
+version = "0.1.0"
+description = "Rust (PyO3) segmented prime sieve — primes_rust module"
+requires-python = ">=3.14"
+
+[tool.maturin]
+module-name = "primes_rust"
+features = ["extension-module"]
+python-source = "python"

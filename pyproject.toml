@@ -1,0 +1,49 @@
+[project]
+name = "primes-bench"
+version = "0.1.0"
+description = "Rust-vs-Cython-vs-Python benchmark based on prime number generation"
+requires-python = ">=3.14"
+
+[dependency-groups]
+dev = [
+    "primes-rust",
+    "primes-c",
+    "primes-py",
+    "pytest>=9.1.1",
+    "mypy>=2.4.0",
+    "ruff>=0.17.2",
+    "debugpy>=1.8.22",
+]
+
+[tool.uv]
+package = false
+
+[tool.uv.sources]
+primes-rust = { path = "rust", editable = true }
+primes-c = { path = "c", editable = true }
+primes-py = { path = "python", editable = true }
+
+[tool.ruff]
+src = ["python/primes_py", "bench", "tests"]
+target-version = "py314"
+indent-width = 4
+line-length = 88
+
+[tool.ruff.format]
+docstring-code-format = true
+indent-style = "space"
+quote-style = "double"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.mypy]
+mypy_path = "$MYPY_CONFIG_FILE_DIR/python:$MYPY_CONFIG_FILE_DIR/c/python:$MYPY_CONFIG_FILE_DIR/bench:$MYPY_CONFIG_FILE_DIR/tests"
+files = ["$MYPY_CONFIG_FILE_DIR/python/primes_py", "$MYPY_CONFIG_FILE_DIR/bench"]
+python_version = "3.14"
+exclude = ['\.venv.*/', "c/", "rust/", "tests/"]
+
+[tool.pytest]
+minversion = "9.0"
+pythonpath = ["python/primes_py", "bench"]
+testpaths = ["tests"]

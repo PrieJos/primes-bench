@@ -1,0 +1,15 @@
+/rust/target
+.venv*/
+__pycache__/
+*.so
+*.pyd
+build/
+dist/
+*.egg-info/
+# Cython-generated C from the .pyx
+/c/primes_c.c
+.gstack/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+__pycache__/

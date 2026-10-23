@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "primes-py"
+version = "0.1.0"
+description = "Pure-Python segmented prime sieve (single/multi-threaded)"
+requires-python = ">=3.10"
+
+[tool.setuptools.packages.find]
+include = ["primes_py*"]
+
+[tool.setuptools.package-data]
+primes_py = ["py.typed"]
