@@ -166,11 +166,15 @@ def main(argv: list[str] | None = None) -> int:
     for name, fn in variants:
         times = _bench_one(fn, args.low, args.high, args.mode, args.repeat, args.warmup)
         med = statistics.median(times)
+        stdev = statistics.stdev(times) if len(times) > 1 else 0.0
         rows.append(
             {
                 "variant": name,
                 "median_s": med,
                 "min_s": min(times),
+                "max_s": max(times),
+                "stdev_s": stdev,
+                "cv": stdev / med if med else 0.0,  # coefficient of variation
                 "scanned_per_s": scanned / med,
                 "primes_per_s": count / med,
             }
@@ -202,14 +206,14 @@ def main(argv: list[str] | None = None) -> int:
     print(f"python={meta['python']}  gil_enabled={gil}  cpus={meta['cpus']}")
     fastest = rows[0]["median_s"]
     print(
-        f"\n{'variant':<22}{'median(s)':>12}{'min(s)':>12}"
-        f"{'M scan/s':>12}{'vs best':>10}"
+        f"\n{'variant':<22}{'median(s)':>12}{'min(s)':>12}{'max(s)':>12}"
+        f"{'cv%':>8}{'M scan/s':>12}{'vs best':>10}"
     )
-    print("-" * 68)
+    print("-" * 88)
     for r in rows:
         print(
-            f"{r['variant']:<22}{r['median_s']:>12.4f}{r['min_s']:>12.4f}"
-            f"{r['scanned_per_s'] / 1e6:>12.1f}{r['median_s'] / fastest:>9.2f}x"
+            f"{r['variant']:<22}{r['median_s']:>12.4f}{r['min_s']:>12.4f}{r['max_s']:>12.4f}"
+            f"{r['cv'] * 100:>7.1f}%{r['scanned_per_s'] / 1e6:>12.1f}{r['median_s'] / fastest:>9.2f}x"
         )
     return 0
 

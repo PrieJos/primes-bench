@@ -86,16 +86,16 @@ non-zero if any disagree. Only then does it time them. Example:
 range [0, 10000000]  mode=count  threads=4  primes=664579  repeat=3
 python=3.14.7  gil_enabled=True  cpus=8
 
-variant                  median(s)      min(s)    M scan/s   vs best
---------------------------------------------------------------------
-c-omp-4t                    0.0040      0.0040      2515.5     1.00x
-rust-4t                     0.0049      0.0047      2055.1     1.22x
-c-pthread-4t                0.0050      0.0049      2002.3     1.26x
-c-1t                        0.0093      0.0092      1078.4     2.33x
-rust-1t                     0.0167      0.0160       600.1     4.19x
-py-1t                       0.0349      0.0336       286.2     8.79x
-py-thread-4t                0.0430      0.0421       232.7    10.81x
-py-process-4t               0.0872      0.0826       114.7    21.92x
+variant                  median(s)      min(s)      max(s)     cv%    M scan/s   vs best
+----------------------------------------------------------------------------------------
+c-omp-4t                    0.0040      0.0040      0.0042     2.1%      2515.5     1.00x
+rust-4t                     0.0049      0.0047      0.0053     5.3%      2055.1     1.22x
+c-pthread-4t                0.0050      0.0049      0.0054     4.0%      2002.3     1.26x
+c-1t                        0.0093      0.0092      0.0095     1.4%      1078.4     2.33x
+rust-1t                     0.0167      0.0160      0.0173     3.1%       600.1     4.19x
+py-1t                       0.0349      0.0336      0.0361     3.5%       286.2     8.79x
+py-thread-4t                0.0430      0.0421      0.0445     2.4%       232.7    10.81x
+py-process-4t               0.0872      0.0826      0.0910     3.8%       114.7    21.92x
 ```
 
 **Header** — the run's parameters and environment:
@@ -112,6 +112,11 @@ py-process-4t               0.0872      0.0826       114.7    21.92x
 - `median(s)` — median wall-clock time over `repeat` runs (the ranking key;
   robust to outliers).
 - `min(s)` — fastest run (best case, least noise).
+- `max(s)` — slowest run (worst case; the gap from `min` shows run-to-run noise).
+- `cv%` — coefficient of variation (stdev ÷ median, as a percent): how noisy the
+  runs were. Unitless, so it's comparable across fast and slow variants. A low
+  `cv%` means the median is trustworthy; a high one means ranking gaps smaller
+  than it are within noise.
 - `M scan/s` — throughput in **millions of integers scanned per second**,
   `(high - low + 1) / median`. Comparable across ranges since it's normalized
   by range size, not prime count.
@@ -119,9 +124,10 @@ py-process-4t               0.0872      0.0826       114.7    21.92x
   `4.19x` means 4.19× slower).
 
 Pass `--json` for the same data machine-readable (a `meta` object plus a
-`results` array with `median_s`, `min_s`, `scanned_per_s`, and `primes_per_s`
-per variant) — note JSON adds `primes_per_s` (primes found per second), which
-the table omits.
+`results` array with `median_s`, `min_s`, `max_s`, `stdev_s`, `cv`,
+`scanned_per_s`, and `primes_per_s` per variant) — note JSON carries raw
+`stdev_s` (the table shows it as `cv%` = `cv` × 100) and `primes_per_s` (primes
+found per second), which the table omits.
 
 Numbers above are one Linux/GCC box; absolute times vary by machine, but the
 ordering (native backends ≫ pure Python, and the GIL flattening
