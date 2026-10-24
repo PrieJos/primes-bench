@@ -26,10 +26,16 @@ static uint64_t isqrt_u64(uint64_t n)
 
   uint64_t x = (uint64_t)sqrtl((long double)n);
 
+  /* Clamp to the largest root that fits: x*x and (x+1)*(x+1) wrap mod 2^64
+   * above this, which makes both comparisons below meaningless (and the
+   * increment loop non-terminating for n near UINT64_MAX). */
+  if (x > 0xFFFFFFFFULL)
+    x = 0xFFFFFFFFULL;
+
   while (x > 0 && x * x > n)
     x--;
 
-  while ((x + 1) * (x + 1) <= n)
+  while (x < 0xFFFFFFFFULL && (x + 1) * (x + 1) <= n)
     x++;
 
   return x;

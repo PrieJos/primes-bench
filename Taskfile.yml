@@ -99,8 +99,8 @@ tasks:
       - uv build c --wheel --out-dir dist
       - uv build rust --wheel --out-dir dist
 
-  test:
-    desc: Cross-backend correctness tests
+  test:python:
+    desc: Python correctness tests
     cmds: [uv run pytest tests/]
 
   test:rust:
@@ -108,9 +108,31 @@ tasks:
     dir: rust
     cmds: [cargo test]
 
+  # Native C tests: test_sieve.c includes sieve.c, so the statics are in scope
+  # and one gcc call builds the whole suite. Never add -DNDEBUG (kills assert).
+  test:c:
+    desc: C sieve unit tests
+    cmds:
+      - mkdir -p c/build
+      - >-
+        gcc -O2 -std=c11 -fopenmp -pthread -DPRIMES_HAVE_PTHREAD=1
+        c/test_sieve.c -lm -o c/build/test_sieve
+      - ./c/build/test_sieve
+
+  test:c:asan:
+    desc: C sieve unit tests under AddressSanitizer + UBSan
+    cmds:
+      - mkdir -p c/build
+      - >-
+        gcc -O1 -g -std=c11 -fopenmp -pthread -DPRIMES_HAVE_PTHREAD=1
+        -fsanitize=address,undefined -fno-omit-frame-pointer
+        c/test_sieve.c -lm -o c/build/test_sieve_asan
+      - ./c/build/test_sieve_asan
+
   test:all:
-    desc: All tests (Python + Rust)
-    deps: [test, test:rust]
+    desc: All tests (Python + Rust + C)
+    aliases: [test]
+    deps: [test:python, test:rust, test:c]
 
   bench:
     desc: 'Run the benchmark CLI (args after --, e.g. task bench -- --high 1_000_000)'

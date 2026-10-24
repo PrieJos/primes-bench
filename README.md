@@ -50,9 +50,12 @@ task sync               # create/refresh all three envs (.venv, .venv-gil, .venv
 task sync:dev           # refresh dev env (.venv)
 task sync:gil           # build/refresh standard-GIL env (.venv-gil, 3.14)
 task sync:ft            # build/refresh free-threaded env (.venv-ft, 3.14t)
-task test               # Python cross-backend tests
+task test               # alias of test:all — Python + Rust + C
+task test:python        # Python cross-backend tests
 task test:rust          # cargo test
-task test:all           # both
+task test:c             # C sieve unit tests
+task test:c:asan        # C sieve unit tests under AddressSanitizer + UBSan (not in test:all)
+task test:all           # Python + Rust + C
 task bench -- --high 1_000_000 --mode count --repeat 5
 task bench:gil -- ...   # bench on 3.14 (standard GIL)
 task bench:ft -- ...    # bench on 3.14t (free-threaded)
@@ -74,7 +77,14 @@ uv run python bench/cli.py --high 1_000_000 --mode list --repeat 5 --json
 
 Each core sieve also self-checks standalone:
 `uv run python -m primes_py.sieve`, `uv run python -m primes_py.parallel`,
-`cargo test --manifest-path rust/Cargo.toml`.
+`cargo test --manifest-path rust/Cargo.toml`, `task test:c`.
+
+`c/test_sieve.c` includes `sieve.c` directly, so it covers the static helpers
+(`isqrt_u64`, `base_primes`, `make_blocks`) and the backend/thread combinations
+the Cython wrapper can't reach — it pins `backend=0` whenever `threads <= 1`.
+`task test:c:asan` reruns the same suite under AddressSanitizer + UBSan, which
+is where the `primes_fill` buffer contract and the parallel fill get checked for
+overruns.
 
 ## Benchmark output
 

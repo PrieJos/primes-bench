@@ -90,3 +90,20 @@ def test_all_backends_agree():
 def test_invalid_range_raises(key, mod):
     with pytest.raises((ValueError, OverflowError)):
         mod.count_primes(10, 5)
+
+
+@pytest.mark.skipif("c" not in BACKENDS, reason="primes_c not built")
+def test_c_wrapper_contracts():
+    """Cython-layer behaviour the shared parametrized tests can't express.
+
+    The C core itself is covered natively by `task test:c`.
+    """
+    mod = BACKENDS["c"]
+    with pytest.raises(ValueError):
+        mod.count_primes(0, 100, threads=4, backend="nope")
+    with pytest.raises(ValueError):
+        mod.count_primes(-1, 10)
+    # backend is documented as ignored when threads <= 1, even if nonsense.
+    assert mod.count_primes(0, 100, threads=1, backend="nope") == 25
+    # Smallest non-degenerate chunk through the segment loop.
+    assert list(mod.iter_primes(0, 50, chunk=1)) == mod.list_primes(0, 50)
