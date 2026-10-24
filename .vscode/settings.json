@@ -19,5 +19,8 @@
     "editor.defaultFormatter": "ms-vscode.cpptools",
     "editor.inlayHints.enabled": "on",
     "editor.formatOnSave": true
+  },
+  "yaml.schemas": {
+    "https://taskfile.dev/schema.json": "Taskfile.yml"
   }
 }

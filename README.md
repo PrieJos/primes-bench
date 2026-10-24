@@ -86,6 +86,11 @@ the Cython wrapper can't reach — it pins `backend=0` whenever `threads <= 1`.
 is where the `primes_fill` buffer contract and the parallel fill get checked for
 overruns.
 
+## Debugging
+
+VS Code launch configs cover Python, C/Cython and Rust (including stepping from
+Python into native code). See [docs/debugging.md](docs/debugging.md).
+
 ## Benchmark output
 
 The CLI first validates that **every** backend/thread variant agrees on the

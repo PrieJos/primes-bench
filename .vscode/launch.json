@@ -6,15 +6,45 @@
       "request": "launch",
       "module": "pytest",
       "args": [
-        "${input:testFile}"
+        "${input:pytestFile}"
       ]
+    },
+    {
+      "name": "Python Debugger: bench CLI",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/bench/cli.py",
+      "args": ["--high", "1_000_000", "--mode", "count", "--repeat", "1"]
+    },
+    {
+      "name": "Native (gdb): pytest -> C/Rust",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/.venv/bin/python",
+      "args": ["-m", "pytest", "${input:testFile}"],
+      "cwd": "${workspaceFolder}",
+      "MIMode": "gdb",
+      "setupCommands": [
+        { "text": "-enable-pretty-printing" },
+        { "text": "set breakpoint pending on" }
+      ]
+    },
+    {
+      "name": "C unit tests (gdb)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/c/build/test_sieve_debug",
+      "cwd": "${workspaceFolder}",
+      "preLaunchTask": "build: C unit tests (debug)",
+      "MIMode": "gdb",
+      "setupCommands": [{ "text": "-enable-pretty-printing" }]
     }
   ],
   "inputs": [
     {
-      "id": "testFile",
+      "id": "pytestFile",
       "type": "promptString",
-      "description": "Enter the test file and test case",
+      "description": "Enter the python test file and test case",
       "default": ""
     }
   ]

@@ -1,0 +1,15 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build: debug extensions",
+      "type": "shell",
+      "command": "task build:debug"
+    },
+    {
+      "label": "build: C unit tests (debug)",
+      "type": "shell",
+      "command": "mkdir -p c/build && gcc -O0 -g -std=c11 -fopenmp -pthread -DPRIMES_HAVE_PTHREAD=1 c/test_sieve.c -lm -o c/build/test_sieve_debug"
+    }
+  ]
+}
