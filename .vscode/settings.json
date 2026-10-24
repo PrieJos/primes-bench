@@ -14,5 +14,10 @@
         "editor.defaultFormatter": "rust-lang.rust-analyzer",
         "editor.inlayHints.enabled": "on",
         "editor.formatOnSave": true
+    },
+    "[c]": {
+        "editor.defaultFormatter": "ms-vscode.cpptools",
+        "editor.inlayHints.enabled": "on",
+        "editor.formatOnSave": true
     }
 }
