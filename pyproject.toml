@@ -13,6 +13,7 @@ dev = [
     "mypy>=2.4.0",
     "ruff>=0.17.2",
     "debugpy>=1.8.22",
+    "debugpy-run>=1.16",
 ]
 
 [tool.uv]

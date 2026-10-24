@@ -46,14 +46,14 @@ def _multi_kwargs(key):
     return [{"threads": 4}]
 
 
-@pytest.mark.parametrize("key,mod", ALL)
-@pytest.mark.parametrize("limit,expected", KNOWN.items())
+@pytest.mark.parametrize("key, mod", ALL)
+@pytest.mark.parametrize("limit, expected", KNOWN.items())
 def test_known_counts(key, mod, limit, expected):
     assert mod.count_primes(0, limit) == expected
 
 
-@pytest.mark.parametrize("key,mod", ALL)
-@pytest.mark.parametrize("lo,hi", EDGE_RANGES)
+@pytest.mark.parametrize("key, mod", ALL)
+@pytest.mark.parametrize("lo, hi", EDGE_RANGES)
 def test_count_matches_list(key, mod, lo, hi):
     primes = mod.list_primes(lo, hi)
     assert mod.count_primes(lo, hi) == len(primes)
@@ -61,13 +61,13 @@ def test_count_matches_list(key, mod, lo, hi):
     assert all(lo <= p <= hi for p in primes)
 
 
-@pytest.mark.parametrize("key,mod", ALL)
-@pytest.mark.parametrize("lo,hi", EDGE_RANGES + [(0, 200_000), (500_000, 700_000)])
+@pytest.mark.parametrize("key, mod", ALL)
+@pytest.mark.parametrize("lo, hi", EDGE_RANGES + [(0, 200_000), (500_000, 700_000)])
 def test_iter_matches_list(key, mod, lo, hi):
     assert list(mod.iter_primes(lo, hi)) == mod.list_primes(lo, hi)
 
 
-@pytest.mark.parametrize("key,mod", ALL)
+@pytest.mark.parametrize("key, mod", ALL)
 def test_multithreaded_matches_serial(key, mod):
     for lo, hi in [(0, 1_000_000), (500_000, 2_000_000), (0, 100)]:
         serial_c = mod.count_primes(lo, hi)
@@ -86,7 +86,7 @@ def test_all_backends_agree():
         assert all(v == ref for v in lists.values())
 
 
-@pytest.mark.parametrize("key,mod", ALL)
+@pytest.mark.parametrize("key, mod", ALL)
 def test_invalid_range_raises(key, mod):
     with pytest.raises((ValueError, OverflowError)):
         mod.count_primes(10, 5)

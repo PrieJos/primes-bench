@@ -1,23 +1,23 @@
 {
-    "rust-analyzer.check.command": "clippy",
-    "python.analysis.typeCheckingMode": "off",
-    "ruff.importStrategy": "fromEnvironment",
-    "mypy-type-checker.importStrategy": "fromEnvironment",
-    "[python]": {
-        "editor.defaultFormatter": "charliermarsh.ruff",
-        "editor.inlayHints.enabled": "on",
-        "editor.codeActionsOnSave": {
-            "source.fixAll.ruff": "always"
-        }
-    },
-    "[rust]": {
-        "editor.defaultFormatter": "rust-lang.rust-analyzer",
-        "editor.inlayHints.enabled": "on",
-        "editor.formatOnSave": true
-    },
-    "[c]": {
-        "editor.defaultFormatter": "ms-vscode.cpptools",
-        "editor.inlayHints.enabled": "on",
-        "editor.formatOnSave": true
+  "rust-analyzer.check.command": "clippy",
+  "python.analysis.typeCheckingMode": "off",
+  "ruff.importStrategy": "fromEnvironment",
+  "mypy-type-checker.importStrategy": "fromEnvironment",
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.inlayHints.enabled": "on",
+    "editor.codeActionsOnSave": {
+      "source.fixAll.ruff": "always"
     }
+  },
+  "[rust]": {
+    "editor.defaultFormatter": "rust-lang.rust-analyzer",
+    "editor.inlayHints.enabled": "on",
+    "editor.formatOnSave": true
+  },
+  "[c]": {
+    "editor.defaultFormatter": "ms-vscode.cpptools",
+    "editor.inlayHints.enabled": "on",
+    "editor.formatOnSave": true
+  }
 }
